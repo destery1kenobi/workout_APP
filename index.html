@@ -12,13 +12,22 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; }
-    html, body, #root { height: 100%; margin: 0; padding: 0; }
+    html, body, #root { height: 100%; height: 100dvh; margin: 0; padding: 0; overflow: hidden; }
     body { background: #050507; color: #f4f4f0; font-family: 'Space Mono', monospace; -webkit-tap-highlight-color: transparent; overscroll-behavior: none; }
+    button { font: inherit; }
+    button:focus-visible, [tabindex]:focus-visible {
+      outline: 2px solid #fbbf24;
+      outline-offset: 2px;
+    }
     ::-webkit-scrollbar { width: 3px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: #27272a; }
     @keyframes ping { 75%, 100% { transform: scale(2); opacity: 0; } }
     .ping-anim { animation: ping 1s cubic-bezier(0,0,0.2,1) infinite; }
+    @media (prefers-reduced-motion: reduce) {
+      .ping-anim { animation: none; }
+      * { transition-duration: 0.01ms !important; }
+    }
   </style>
 </head>
 <body>
@@ -46,7 +55,7 @@ const DAY2_EXERCISES = [
   { name: "Strict Shoulder Press",       duration: 40, tip: "Core and glutes braced. No knee dip. Push strictly overhead. Seated or standing.", imgFile: "_Assets/ex_shoulder_press.png" },
   { name: "Dumbbell Floor Flyes",        duration: 40, tip: "Arms wide, slight elbow bend. Touch arms to floor lightly. Squeeze chest hard on return.", imgFile: "_Assets/ex_floor_flyes.png" },
   { name: "Lateral Raise",               duration: 40, tip: "Stand tall, pinkies tilted up. No body swing. Pure lateral shoulder isolation.", imgFile: "_Assets/ex_lateral_raise.png" },
-  { name: "Close-Grip Floor Press",      duration: 40, tip: "Dumbbells pressed together. Elbows rub ribs on descent. Shifts load to triceps and inner chest.", imgFile: "_Assets/ex_close_grip.png" },
+  { name: "Dumbbell Floor Skull Crusher", duration: 40, tip: "Dumbbells extended above chest, elbows fixed pointing at the ceiling. Bend only at the elbow, lowering weights beside your ears. No shoulder movement — triceps only.", imgFile: "_Assets/ex_skull_crusher.png" },
   { name: "Rear Delt Flyes",             duration: 40, tip: "Hinge at hips, flat back. Raise out with elbows leading. Isolates posterior deltoids.", imgFile: "_Assets/ex_rear_delt.png" },
   { name: "Hex Press",                   duration: 40, tip: "Press dumbbells hard together over chest. Maintain horizontal squeeze throughout.", imgFile: "_Assets/ex_hex_press.png" },
   { name: "Overhead Tricep Extension",   duration: 40, tip: "One dumbbell with both hands overhead. Lower behind head, elbows tucked close to ears.", imgFile: "_Assets/ex_oh_extension.png" },
@@ -62,7 +71,7 @@ const DAY1_BURNOUTS = [
 const DAY2_BURNOUTS = [
   { name: "Floor Press [AMRAP]",         duration: 40, tip: "Continuous reps to failure. Press strictly throughout.", imgFile: "_Assets/ex_floor_press.png" },
   { name: "Lateral Raise [AMRAP]",       duration: 40, tip: "Continuous reps to failure. Isolate lateral delts, no swing.", imgFile: "_Assets/ex_lateral_raise.png" },
-  { name: "Close-Grip Press [AMRAP]",    duration: 40, tip: "Continuous reps to failure. Elbows hugging ribs throughout.", imgFile: "_Assets/ex_close_grip.png" },
+  { name: "Skull Crusher [AMRAP]",       duration: 40, tip: "Continuous reps to failure. Elbows fixed and pointing up — triceps only.", imgFile: "_Assets/ex_skull_crusher.png" },
 ];
 
 const QUOTES = [
@@ -311,10 +320,10 @@ function TempoPacer({ pacerTick, visible }) {
   const pct   = isEcc ? (3000 - phase) / 3000 : (phase - 3000) / 1000;
 
   return (
-    <div style={{ padding: '8px 16px', borderTop: '1px solid #18181b' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-        <span style={{ fontFamily: 'Space Mono', fontSize: 9, color: '#52525b', textTransform: 'uppercase', letterSpacing: '0.1em' }}>TEMPO PACER</span>
-        <span style={{ fontFamily: 'Space Mono', fontSize: 9, fontWeight: 700, color: isEcc ? '#a1a1aa' : '#d97706' }}>
+    <div style={{ padding: '5px 16px', borderTop: '1px solid #18181b' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
+        <span style={{ fontFamily: 'Space Mono', fontSize: 11, color: '#96969e', textTransform: 'uppercase', letterSpacing: '0.1em' }}>TEMPO PACER</span>
+        <span style={{ fontFamily: 'Space Mono', fontSize: 11, fontWeight: 700, color: isEcc ? '#c7c7cd' : '#d97706' }}>
           {isEcc ? '↓ ECCENTRIC 3S' : '↑ DRIVE 1S'}
         </span>
       </div>
@@ -331,62 +340,62 @@ function IntroScreen({ exhaustionEnabled, onToggleExhaustion, onStart }) {
   const [selectedDay, setSelectedDay] = useState(1);
 
   return (
-    <div style={{ position: 'fixed', inset: 0, background: '#050507', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, zIndex: 50, overflowY: 'auto' }}>
-      <div style={{ width: '100%', maxWidth: 360, background: '#0c0c0e', border: '1px solid #27272a', padding: 24, position: 'relative', margin: 'auto' }}>
-        <span style={{ position: 'absolute', top: -6, left: -6, color: '#3f3f46', fontSize: 12, userSelect: 'none', fontFamily: 'monospace' }}>+</span>
-        <span style={{ position: 'absolute', top: -6, right: -6, color: '#3f3f46', fontSize: 12, userSelect: 'none', fontFamily: 'monospace' }}>+</span>
-        <span style={{ position: 'absolute', bottom: -6, left: -6, color: '#3f3f46', fontSize: 12, userSelect: 'none', fontFamily: 'monospace' }}>+</span>
-        <span style={{ position: 'absolute', bottom: -6, right: -6, color: '#3f3f46', fontSize: 12, userSelect: 'none', fontFamily: 'monospace' }}>+</span>
+    <div style={{ position: 'fixed', inset: 0, height: '100dvh', background: '#050507', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 12, zIndex: 50, overflow: 'hidden' }}>
+      <div style={{ width: '100%', maxWidth: 360, maxHeight: '100%', overflowY: 'auto', background: '#0c0c0e', border: '1px solid #27272a', padding: 16, position: 'relative', margin: 'auto' }}>
+        <span aria-hidden="true" style={{ position: 'absolute', top: -6, left: -6, color: '#3f3f46', fontSize: 12, userSelect: 'none', fontFamily: 'monospace' }}>+</span>
+        <span aria-hidden="true" style={{ position: 'absolute', top: -6, right: -6, color: '#3f3f46', fontSize: 12, userSelect: 'none', fontFamily: 'monospace' }}>+</span>
+        <span aria-hidden="true" style={{ position: 'absolute', bottom: -6, left: -6, color: '#3f3f46', fontSize: 12, userSelect: 'none', fontFamily: 'monospace' }}>+</span>
+        <span aria-hidden="true" style={{ position: 'absolute', bottom: -6, right: -6, color: '#3f3f46', fontSize: 12, userSelect: 'none', fontFamily: 'monospace' }}>+</span>
 
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: 16, marginBottom: 20, borderBottom: '1px dashed #27272a' }}>
-          <span style={{ color: '#d97706', fontFamily: 'Space Mono', fontSize: 12, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase' }}>SYS.INIT</span>
-          <span style={{ color: '#52525b', fontFamily: 'Space Mono', fontSize: 10 }}>COMPANION_15LB</span>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: 10, marginBottom: 12, borderBottom: '1px dashed #27272a' }}>
+          <span style={{ color: '#d97706', fontFamily: 'Space Mono', fontSize: 14, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase' }}>SYS.INIT</span>
+          <span style={{ color: '#96969e', fontFamily: 'Space Mono', fontSize: 12 }}>COMPANION_15LB</span>
         </div>
 
-        <div style={{ background: 'rgba(0,0,0,0.5)', border: '1px solid #18181b', padding: '12px 16px', marginBottom: 20, fontFamily: 'Space Mono', fontSize: 11, lineHeight: 1.9, color: '#a1a1aa' }}>
-          <div style={{ color: '#f4f4f0', fontWeight: 700, marginBottom: 6 }}>BIOMECHANICAL PROTOCOLS:</div>
-          <div>&gt; JOINT DEPRESSURIZATION............<span style={{ color: '#a1a1aa' }}> [PASS]</span></div>
-          <div>&gt; KNEE-SAFE ANGLE MATRIX............<span style={{ color: '#a1a1aa' }}> [ACTIVE]</span></div>
-          <div>&gt; 15LB INERTIAL MASS...............<span style={{ color: '#a1a1aa' }}> [READY]</span></div>
+        <div style={{ background: 'rgba(0,0,0,0.5)', border: '1px solid #18181b', padding: '10px 14px', marginBottom: 12, fontFamily: 'Space Mono', fontSize: 13, lineHeight: 1.5, color: '#c7c7cd' }}>
+          <div style={{ color: '#f4f4f0', fontWeight: 700, marginBottom: 4 }}>BIOMECHANICAL PROTOCOLS:</div>
+          <div>&gt; JOINT DEPRESSURIZATION............<span style={{ color: '#c7c7cd' }}> [PASS]</span></div>
+          <div>&gt; KNEE-SAFE ANGLE MATRIX............<span style={{ color: '#c7c7cd' }}> [ACTIVE]</span></div>
+          <div>&gt; 15LB INERTIAL MASS...............<span style={{ color: '#c7c7cd' }}> [READY]</span></div>
         </div>
 
-        <div style={{ marginBottom: 20 }}>
-          <div style={{ fontFamily: 'Space Mono', fontSize: 10, color: '#52525b', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: 10 }}>SELECT SPLIT:</div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <div style={{ marginBottom: 12 }}>
+          <div style={{ fontFamily: 'Space Mono', fontSize: 12, color: '#96969e', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: 6 }}>SELECT SPLIT:</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             {[
               { day: 1, tag: 'SPLIT_01 // POSTERIOR & PULL', label: '3× BACK · 3× LEGS · 3× BICEPS' },
               { day: 2, tag: 'SPLIT_02 // ANTERIOR & PUSH',  label: '3× CHEST · 3× DELTS · 3× TRICEPS' },
             ].map(({ day, tag, label }) => (
-              <button key={day} onClick={() => setSelectedDay(day)} style={{
-                padding: '14px 16px', textAlign: 'left', display: 'flex', flexDirection: 'column', gap: 4, cursor: 'pointer',
+              <button key={day} onClick={() => setSelectedDay(day)} aria-pressed={selectedDay === day} style={{
+                padding: '9px 14px', minHeight: 40, textAlign: 'left', display: 'flex', flexDirection: 'column', gap: 2, cursor: 'pointer',
                 transition: 'all 0.2s', background: 'transparent',
                 border: selectedDay === day ? '2px solid #f4f4f0' : '1px solid #27272a',
-                color: selectedDay === day ? '#f4f4f0' : '#71717a',
+                color: selectedDay === day ? '#f4f4f0' : '#9c9ca4',
               }}>
-                <span style={{ fontFamily: 'Space Mono', fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' }}>{tag}</span>
-                <span style={{ fontFamily: 'Barlow Condensed', fontSize: 17, fontWeight: 700, letterSpacing: '0.04em' }}>{label}</span>
+                <span style={{ fontFamily: 'Space Mono', fontSize: 12, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' }}>{tag}</span>
+                <span style={{ fontFamily: 'Barlow Condensed', fontSize: 18, fontWeight: 700, letterSpacing: '0.04em' }}>{label}</span>
               </button>
             ))}
           </div>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', border: '1px dashed #27272a', background: 'rgba(0,0,0,0.3)', marginBottom: 20 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 14px', border: '1px dashed #27272a', background: 'rgba(0,0,0,0.3)', marginBottom: 12 }}>
           <div>
-            <div style={{ fontFamily: 'Space Mono', fontSize: 10, fontWeight: 700, color: '#a1a1aa', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 3 }}>EXHAUSTION OVERRIDE</div>
-            <div style={{ fontFamily: 'Space Mono', fontSize: 10, color: '#a1a1aa' }}>+3 AMRAP burnout sets per split</div>
+            <div style={{ fontFamily: 'Space Mono', fontSize: 12, fontWeight: 700, color: '#c7c7cd', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 2 }}>EXHAUSTION OVERRIDE</div>
+            <div style={{ fontFamily: 'Space Mono', fontSize: 12, color: '#c7c7cd' }}>+3 AMRAP burnout sets per split</div>
           </div>
-          <button onClick={onToggleExhaustion} style={{
-            padding: '6px 12px', fontFamily: 'Space Mono', fontSize: 10, fontWeight: 700, cursor: 'pointer',
+          <button onClick={onToggleExhaustion} aria-pressed={exhaustionEnabled} aria-label="Toggle exhaustion overload mode" style={{
+            padding: '7px 12px', minHeight: 36, fontFamily: 'Space Mono', fontSize: 12, fontWeight: 700, cursor: 'pointer',
             border: `1px solid ${exhaustionEnabled ? '#d97706' : '#3f3f46'}`,
-            color: exhaustionEnabled ? '#d97706' : '#71717a', background: 'transparent', transition: 'all 0.2s',
+            color: exhaustionEnabled ? '#d97706' : '#9c9ca4', background: 'transparent', transition: 'all 0.2s',
           }}>
             {exhaustionEnabled ? '[ON]' : '[OFF]'}
           </button>
         </div>
 
         <button onClick={() => onStart(selectedDay)} style={{
-          width: '100%', padding: '16px 0', background: '#f4f4f0', color: '#0a0a0a', fontFamily: 'Space Mono',
-          fontSize: 12, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase',
+          width: '100%', padding: '13px 0', minHeight: 46, background: '#f4f4f0', color: '#0a0a0a', fontFamily: 'Space Mono',
+          fontSize: 14, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase',
           cursor: 'pointer', border: 'none', transition: 'background 0.15s',
         }}>
           [ EXECUTE SEQUENCE ]
@@ -400,16 +409,16 @@ function IntroScreen({ exhaustionEnabled, onToggleExhaustion, onStart }) {
 
 function Header({ day, totalSecsLeft, isMuted, onToggleMute, exhaustionEnabled, onToggleExhaustion, phase }) {
   return (
-    <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 16px', borderBottom: '1px solid #1c1c1e', background: '#080809', flexShrink: 0 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+    <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 14px', borderBottom: '1px solid #1c1c1e', background: '#080809', flexShrink: 0 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#71717a" strokeWidth="1.5" strokeLinecap="square" strokeLinejoin="miter">
           <path d="m6.5 6.5 11 11"/><path d="m21 21-1-1"/><path d="m3 3 1 1"/>
           <path d="m18.5 5.5 3 3"/><path d="m5.5 18.5 3 3"/>
           <path d="M8.5 14.5a2.5 2.5 0 0 0 4 0l1.5-1.5a2.5 2.5 0 0 0 0-4l-1.5-1.5a2.5 2.5 0 0 0-4 0l-1.5 1.5a2.5 2.5 0 0 0 0 4z"/>
         </svg>
         <div>
-          <div style={{ fontFamily: 'Space Mono', fontSize: 11, fontWeight: 700, color: '#f4f4f0', letterSpacing: '0.14em', textTransform: 'uppercase', lineHeight: 1 }}>MS_COMPANION</div>
-          <div style={{ fontFamily: 'Space Mono', fontSize: 9, color: '#52525b', marginTop: 2, lineHeight: 1 }}>
+          <div style={{ fontFamily: 'Space Mono', fontSize: 13, fontWeight: 700, color: '#f4f4f0', letterSpacing: '0.14em', textTransform: 'uppercase', lineHeight: 1 }}>MS_COMPANION</div>
+          <div style={{ fontFamily: 'Space Mono', fontSize: 11, color: '#96969e', marginTop: 3, lineHeight: 1 }}>
             {phase === 'workout' ? `DAY ${day} · UNIT_15LB` : 'UNIT_15LB'}
           </div>
         </div>
@@ -417,26 +426,26 @@ function Header({ day, totalSecsLeft, isMuted, onToggleMute, exhaustionEnabled, 
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
         {phase === 'workout' && (
           <div style={{ textAlign: 'right', marginRight: 4 }}>
-            <div style={{ fontFamily: 'Space Mono', fontSize: 9, color: '#52525b', textTransform: 'uppercase', letterSpacing: '0.1em' }}>SESSION</div>
-            <div style={{ fontFamily: 'Space Mono', fontSize: 14, fontWeight: 700, color: '#a1a1aa' }}>{fmt(totalSecsLeft)}</div>
+            <div style={{ fontFamily: 'Space Mono', fontSize: 11, color: '#96969e', textTransform: 'uppercase', letterSpacing: '0.1em' }}>SESSION</div>
+            <div style={{ fontFamily: 'Space Mono', fontSize: 16, fontWeight: 700, color: '#c7c7cd' }}>{fmt(totalSecsLeft)}</div>
           </div>
         )}
-        <button onClick={onToggleExhaustion} style={{
-          padding: '5px 8px', fontFamily: 'Space Mono', fontSize: 9, fontWeight: 700,
+        <button onClick={onToggleExhaustion} aria-pressed={exhaustionEnabled} aria-label="Toggle exhaustion overload mode" style={{
+          padding: '7px 10px', minHeight: 36, fontFamily: 'Space Mono', fontSize: 11, fontWeight: 700,
           letterSpacing: '0.08em', textTransform: 'uppercase', cursor: 'pointer', background: 'transparent',
           border: `1px solid ${exhaustionEnabled ? '#d97706' : '#27272a'}`,
-          color: exhaustionEnabled ? '#d97706' : '#52525b', transition: 'all 0.2s',
+          color: exhaustionEnabled ? '#d97706' : '#96969e', transition: 'all 0.2s',
         }}>
           {exhaustionEnabled ? 'OVER:ON' : 'OVER:OFF'}
         </button>
-        <button onClick={onToggleMute} style={{ padding: 6, border: '1px solid #27272a', background: 'transparent', color: '#71717a', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <button onClick={onToggleMute} aria-pressed={isMuted} aria-label={isMuted ? 'Unmute audio cues' : 'Mute audio cues'} style={{ width: 38, height: 38, padding: 0, border: '1px solid #27272a', background: 'transparent', color: '#aeaeb6', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           {isMuted ? (
-            <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
+            <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
               <path strokeLinecap="round" strokeLinejoin="round" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
             </svg>
           ) : (
-            <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
+            <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" d="M15.536 8.464a5 5 0 010 7.072M12 18.75V5.25L7.75 9.5H4.5v5h3.25L12 18.75z" />
             </svg>
           )}
@@ -455,12 +464,12 @@ function DayTabs({ day, onChange }) {
         { d: 1, label: 'DAY 1 · PULL & POSTERIOR' },
         { d: 2, label: 'DAY 2 · PUSH & ANTERIOR' },
       ].map(({ d, label }) => (
-        <button key={d} onClick={() => onChange(d)} style={{
-          flex: 1, padding: '10px 8px', fontFamily: 'Space Mono', fontSize: 10, fontWeight: 700,
+        <button key={d} onClick={() => onChange(d)} aria-current={day === d ? 'true' : undefined} style={{
+          flex: 1, padding: '9px 8px', minHeight: 38, fontFamily: 'Space Mono', fontSize: 12, fontWeight: 700,
           letterSpacing: '0.08em', textTransform: 'uppercase', cursor: 'pointer', border: 'none',
           borderBottom: day === d ? '2px solid #f4f4f0' : '2px solid transparent',
           background: day === d ? 'rgba(244,244,240,0.04)' : 'transparent',
-          color: day === d ? '#f4f4f0' : '#52525b', transition: 'all 0.2s',
+          color: day === d ? '#f4f4f0' : '#96969e', transition: 'all 0.2s',
         }}>
           {label}
         </button>
@@ -492,43 +501,30 @@ function ExercisePanel({ step, timeline, currentIdx, timeRemaining, pacerTick, i
                    : step.type === 'work'     ? 'Maintain strict 3-second descent. Squeeze at peak.'
                    : step.type === 'cooldown' ? 'Slow passive stretching. Let the tissues lengthen fully.'
                    : 'Dynamic mobility prep. Lubricate joints. Zero knee impacts.';
-  const nextStep = timeline[currentIdx + 1];
-  const nextName = nextStep ? (nextStep.type === 'rest' ? 'Transition Rest' : nextStep.name) : 'FINISH';
 
   return (
-    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, userSelect: 'none', overflowY: 'auto' }}
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, userSelect: 'none', overflow: 'hidden' }}
       onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
 
-      {/* Image + Timer Block */}
-      <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, paddingTop: 20, paddingBottom: 12 }}>
-        {step.imgFile && (
-          <img src={step.imgFile} alt="" aria-hidden="true" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', opacity: 0.07, mixBlendMode: 'screen', pointerEvents: 'none' }} />
-        )}
-
-        {/* Timer ring */}
-        <div style={{ position: 'relative', width: 'min(210px, 54vw)', height: 'min(210px, 54vw)', flexShrink: 0, zIndex: 1 }}>
+      {/* Timer Block — flexible: absorbs whatever vertical space is left. Images removed for now (imgFile data kept on each exercise in case we bring them back). */}
+      <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', flex: '1 1 0%', minHeight: 0, padding: '6px 0' }}>
+        {/* Timer ring — fills available height, capped so it never gets too wide on short/narrow screens */}
+        <div style={{ position: 'relative', height: '100%', width: 'auto', aspectRatio: '1', maxWidth: 'min(60vw, 280px)', maxHeight: '280px', flexShrink: 1, zIndex: 1 }}>
           <TimerRing timeRemaining={timeRemaining} duration={step.duration} stepType={step.type} isAMRAP={isAMRAP} />
           <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
             <span style={{ fontFamily: 'Space Mono', fontSize: 'clamp(1.9rem, 11vw, 3rem)', fontWeight: 700, color: '#ffffff', letterSpacing: '-0.02em', lineHeight: 1 }}>
               {fmt(timeRemaining)}
             </span>
-            <span style={{ fontFamily: 'Space Mono', fontSize: 9, fontWeight: 700, color: phaseColor, marginTop: 8, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+            <span style={{ fontFamily: 'Space Mono', fontSize: 12, fontWeight: 700, color: phaseColor, marginTop: 8, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
               {phaseLabel}
             </span>
           </div>
         </div>
-
-        {/* Thumbnail image right of ring */}
-        {step.imgFile && (
-          <div style={{ position: 'absolute', right: 16, top: '50%', transform: 'translateY(-50%)', width: 'min(80px, 18vw)', height: 'min(80px, 18vw)', opacity: 0.45 }}>
-            <img src={step.imgFile} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain', mixBlendMode: 'screen' }} />
-          </div>
-        )}
       </div>
 
       {/* Round badge */}
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 10, marginBottom: 14, flexShrink: 0 }}>
-        <span style={{ fontFamily: 'Space Mono', fontSize: 10, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', padding: '4px 12px', border: `1px solid ${isAMRAP ? '#92400e' : '#27272a'}`, color: isAMRAP ? '#d97706' : '#a1a1aa', background: '#0a0a0b' }}>
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 10, marginBottom: 8, flexShrink: 0 }}>
+        <span style={{ fontFamily: 'Space Mono', fontSize: 13, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', padding: '5px 12px', border: `1px solid ${isAMRAP ? '#92400e' : '#27272a'}`, color: isAMRAP ? '#d97706' : '#c7c7cd', background: '#0a0a0b' }}>
           {roundLabel}
         </span>
         {!isAMRAP && (step.type === 'work' || step.type === 'rest') && (
@@ -541,74 +537,74 @@ function ExercisePanel({ step, timeline, currentIdx, timeRemaining, pacerTick, i
       </div>
 
       {/* Exercise name + description */}
-      <div style={{ padding: '0 16px 10px', flexShrink: 0 }}>
-        <h2 style={{ fontFamily: 'Barlow Condensed', fontSize: 'clamp(1.2rem, 6vw, 1.55rem)', fontWeight: 800, color: '#ffffff', textTransform: 'uppercase', letterSpacing: '0.04em', lineHeight: 1.1, margin: '0 0 5px' }}>
+      <div style={{ padding: '0 16px 6px', flexShrink: 0 }}>
+        <h2 aria-live="polite" style={{ fontFamily: 'Barlow Condensed', fontSize: 'clamp(1.4rem, 6.5vw, 1.75rem)', fontWeight: 800, color: '#ffffff', textTransform: 'uppercase', letterSpacing: '0.04em', lineHeight: 1.05, margin: '0 0 3px' }}>
           {step.name}
         </h2>
-        <p style={{ fontFamily: 'Barlow Condensed', fontSize: 14, color: '#d4d3cf', margin: 0, lineHeight: 1.5, textTransform: 'uppercase', letterSpacing: '0.03em' }}>
+        <p style={{ fontFamily: 'Barlow Condensed', fontSize: 17, color: '#e2e1dd', margin: 0, lineHeight: 1.25, textTransform: 'uppercase', letterSpacing: '0.03em' }}>
           {exDesc}
         </p>
       </div>
 
       {/* Tip */}
-      <div style={{ margin: '0 16px 10px', padding: '10px 12px', border: '1px solid #18181b', background: '#0a0a0b', display: 'flex', gap: 10, flexShrink: 0 }}>
-        <span style={{ fontFamily: 'Space Mono', fontSize: 10, color: '#3f3f46', flexShrink: 0, paddingTop: 1 }}>i</span>
-        <p style={{ fontFamily: 'Barlow Condensed', fontSize: 14, color: '#d4d3cf', margin: 0, lineHeight: 1.5 }}>{step.tip}</p>
+      <div style={{ margin: '0 16px 6px', padding: '8px 14px', border: '1px solid #18181b', background: '#0a0a0b', display: 'flex', gap: 10, flexShrink: 0 }}>
+        <span style={{ fontFamily: 'Space Mono', fontSize: 12, color: '#71717a', flexShrink: 0, paddingTop: 1 }} aria-hidden="true">i</span>
+        <p style={{ fontFamily: 'Barlow Condensed', fontSize: 16, color: '#e2e1dd', margin: 0, lineHeight: 1.25 }}>{step.tip}</p>
       </div>
 
       <TempoPacer pacerTick={pacerTick} visible={isPlaying && step.type === 'work'} />
-
-      {/* Next up */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', borderTop: '1px solid #18181b', flexShrink: 0 }}>
-        <span style={{ fontFamily: 'Space Mono', fontSize: 9, color: '#3f3f46', textTransform: 'uppercase', letterSpacing: '0.1em', flexShrink: 0 }}>NEXT:</span>
-        <span style={{ fontFamily: 'Space Mono', fontSize: 9, color: '#a1a1aa', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{nextName}</span>
-      </div>
     </div>
   );
 }
 
 // ─── BOTTOM BAR ────────────────────────────────────────────────────────────
 
-function BottomBar({ isPlaying, onPlayPause, onPrev, onNext, onOpenRoadmap, currentIdx, total }) {
+function BottomBar({ isPlaying, onPlayPause, onPrev, onNext, onOpenRoadmap, currentIdx, total, timeline, roadmapOpen }) {
   const isFirst = currentIdx === 0;
   const isLast  = currentIdx === total - 1;
   const navBtn  = (disabled) => ({
-    padding: '14px 16px', border: '1px solid #27272a', background: '#0c0c0e',
-    color: disabled ? '#3f3f46' : '#71717a', cursor: disabled ? 'not-allowed' : 'pointer',
+    padding: '10px 14px', minWidth: 44, minHeight: 44, border: '1px solid #27272a', background: '#0c0c0e',
+    color: disabled ? '#3f3f46' : '#aeaeb6', cursor: disabled ? 'not-allowed' : 'pointer',
     display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s', flexShrink: 0,
   });
 
+  // Peek: next couple of real exercises (skip transition-rest filler) so the shelf always
+  // previews actual upcoming work, not just "Transition Rest".
+  const upcoming = timeline.slice(currentIdx + 1).filter(s => s.type !== 'rest').slice(0, 2).map(s => s.name);
+  const peekText = upcoming.length ? upcoming.join('   ·   ') : 'FINISH';
+
   return (
     <div style={{ flexShrink: 0, borderTop: '1px solid #1c1c1e', background: '#080809' }}>
-      <button onClick={onOpenRoadmap} style={{ width: '100%', padding: '8px 16px', borderBottom: '1px solid #18181b', background: 'transparent', color: '#52525b', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-        <span style={{ fontFamily: 'Space Mono', fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.15em' }}>ROADMAP</span>
-        <svg width="10" height="10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+      <button onClick={onOpenRoadmap} aria-label="Open full workout roadmap" aria-expanded={roadmapOpen} style={{ width: '100%', padding: '6px 16px', minHeight: 36, borderBottom: '1px solid #18181b', background: 'transparent', color: '#9c9ca4', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, textAlign: 'left' }}>
+        <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5} aria-hidden="true" style={{ flexShrink: 0 }}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
         </svg>
-        <span style={{ fontFamily: 'Space Mono', fontSize: 9, color: '#3f3f46' }}>Phase {currentIdx + 1}/{total}</span>
+        <span style={{ fontFamily: 'Space Mono', fontSize: 10, fontWeight: 700, color: '#6b6b73', textTransform: 'uppercase', letterSpacing: '0.1em', flexShrink: 0 }}>UP NEXT</span>
+        <span style={{ fontFamily: 'Space Mono', fontSize: 11, color: '#c7c7cd', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1, textTransform: 'uppercase' }}>{peekText}</span>
+        <span style={{ fontFamily: 'Space Mono', fontSize: 11, color: '#6b6b73', flexShrink: 0 }}>{currentIdx + 1}/{total}</span>
       </button>
 
-      <div style={{ display: 'flex', alignItems: 'stretch', gap: 8, padding: '10px 16px', paddingBottom: 'max(10px, env(safe-area-inset-bottom))' }}>
-        <button onClick={onPrev} disabled={isFirst} style={navBtn(isFirst)}>
-          <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+      <div style={{ display: 'flex', alignItems: 'stretch', gap: 8, padding: '8px 16px', paddingBottom: 'max(8px, env(safe-area-inset-bottom))' }}>
+        <button onClick={onPrev} disabled={isFirst} aria-label="Previous phase" style={navBtn(isFirst)}>
+          <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5} aria-hidden="true">
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
           </svg>
         </button>
-        <button onClick={onPlayPause} style={{ flex: 1, padding: '14px 12px', background: '#f4f4f0', color: '#0a0a0a', border: 'none', fontFamily: 'Space Mono', fontSize: 11, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, transition: 'background 0.15s' }}>
+        <button onClick={onPlayPause} aria-label={isPlaying ? 'Pause workout' : (currentIdx === 0 ? 'Start workout' : 'Resume workout')} style={{ flex: 1, padding: '11px 12px', background: '#f4f4f0', color: '#0a0a0a', border: 'none', fontFamily: 'Space Mono', fontSize: 13, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, transition: 'background 0.15s' }}>
           {isPlaying ? (
             <>
-              <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M10 9v6m4-6v6" /></svg>
+              <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3} aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M10 9v6m4-6v6" /></svg>
               HALT CYCLE
             </>
           ) : (
             <>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="#0a0a0a"><path d="M8 5v14l11-7z" /></svg>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="#0a0a0a" aria-hidden="true"><path d="M8 5v14l11-7z" /></svg>
               {currentIdx === 0 ? 'START SESSION' : 'RESUME'}
             </>
           )}
         </button>
-        <button onClick={onNext} disabled={isLast} style={navBtn(isLast)}>
-          <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+        <button onClick={onNext} disabled={isLast} aria-label="Next phase" style={navBtn(isLast)}>
+          <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5} aria-hidden="true">
             <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
           </svg>
         </button>
@@ -648,18 +644,18 @@ function RoadmapSheet({ timeline, currentIdx, viewFilter, onFilterChange, onJump
         display: 'flex', flexDirection: 'column',
         transition: 'transform 0.3s cubic-bezier(0.4,0,0.2,1)',
       }}>
-        <div onClick={onClose} style={{ display: 'flex', justifyContent: 'center', padding: '12px 0', borderBottom: '1px solid #1c1c1e', cursor: 'pointer', flexShrink: 0 }}>
-          <div style={{ width: 36, height: 4, borderRadius: 2, background: '#3f3f46' }} />
-        </div>
+        <button onClick={onClose} aria-label="Close roadmap" style={{ display: 'flex', justifyContent: 'center', width: '100%', padding: '14px 0', minHeight: 40, border: 'none', borderBottom: '1px solid #1c1c1e', background: 'transparent', cursor: 'pointer', flexShrink: 0 }}>
+          <div aria-hidden="true" style={{ width: 36, height: 4, borderRadius: 2, background: '#52525b' }} />
+        </button>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 14px', borderBottom: '1px solid #1c1c1e', flexShrink: 0 }}>
-          <span style={{ fontFamily: 'Space Mono', fontSize: 10, fontWeight: 700, color: '#a1a1aa', textTransform: 'uppercase', letterSpacing: '0.12em' }}>SYSTEM_CHRONOLOGY</span>
+          <span style={{ fontFamily: 'Space Mono', fontSize: 12, fontWeight: 700, color: '#c7c7cd', textTransform: 'uppercase', letterSpacing: '0.12em' }}>SYSTEM_CHRONOLOGY</span>
           <div style={{ display: 'flex', gap: 6 }}>
             {['all', 'lifts'].map(f => (
-              <button key={f} onClick={() => onFilterChange(f)} style={{
-                padding: '4px 10px', fontFamily: 'Space Mono', fontSize: 9, fontWeight: 700, textTransform: 'uppercase',
+              <button key={f} onClick={() => onFilterChange(f)} aria-pressed={viewFilter === f} style={{
+                padding: '8px 14px', minHeight: 36, fontFamily: 'Space Mono', fontSize: 11, fontWeight: 700, textTransform: 'uppercase',
                 letterSpacing: '0.08em', cursor: 'pointer', transition: 'all 0.15s',
                 background: viewFilter === f ? '#27272a' : 'transparent',
-                color: viewFilter === f ? '#f4f4f0' : '#52525b',
+                color: viewFilter === f ? '#f4f4f0' : '#96969e',
                 border: viewFilter === f ? '1px solid #3f3f46' : '1px solid transparent',
               }}>
                 {f}
@@ -678,22 +674,23 @@ function RoadmapSheet({ timeline, currentIdx, viewFilter, onFilterChange, onJump
             return (
               <button key={step.id} data-active={isActive ? "true" : "false"}
                 onClick={() => { onJumpTo(realIdx); sfx.nav(); }}
+                aria-label={`${step.name}, ${ts.label}${step.round > 0 ? `, round ${step.round}` : ''}, ${step.duration} seconds${isActive ? ', current' : isDone ? ', completed' : ''}`}
                 style={{
                   width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                  padding: '10px 10px', marginBottom: 4, textAlign: 'left', cursor: 'pointer',
+                  padding: '12px 10px', minHeight: 44, marginBottom: 4, textAlign: 'left', cursor: 'pointer',
                   background: isActive ? '#18181b' : 'transparent',
                   border: isActive ? '1px solid #3f3f46' : '1px solid transparent',
-                  opacity: isDone ? 0.38 : 1, transition: 'all 0.15s',
+                  opacity: isDone ? 0.5 : 1, transition: 'all 0.15s',
                 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0, flex: 1 }}>
-                  <div style={{ width: 14, height: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <div aria-hidden="true" style={{ width: 14, height: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                     {isActive ? (
                       <div style={{ position: 'relative', width: 8, height: 8 }}>
                         <div className="ping-anim" style={{ position: 'absolute', inset: 0, background: '#f4f4f0', opacity: 0.5 }} />
                         <div style={{ width: 8, height: 8, background: '#d97706', position: 'relative' }} />
                       </div>
                     ) : isDone ? (
-                      <svg width="10" height="10" fill="none" viewBox="0 0 24 24" stroke="#52525b" strokeWidth={3}>
+                      <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="#71717a" strokeWidth={3}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                       </svg>
                     ) : (
@@ -701,18 +698,18 @@ function RoadmapSheet({ timeline, currentIdx, viewFilter, onFilterChange, onJump
                     )}
                   </div>
                   <div style={{ minWidth: 0, flex: 1 }}>
-                    <div style={{ fontFamily: 'Space Mono', fontSize: 10, fontWeight: isActive ? 700 : 400, color: isActive ? '#ffffff' : isDone ? '#3f3f46' : '#d0cfcb', textTransform: 'uppercase', letterSpacing: '0.04em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textDecoration: isDone ? 'line-through' : 'none' }}>
+                    <div style={{ fontFamily: 'Space Mono', fontSize: 12, fontWeight: isActive ? 700 : 400, color: isActive ? '#ffffff' : isDone ? '#6b6b73' : '#d0cfcb', textTransform: 'uppercase', letterSpacing: '0.04em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textDecoration: isDone ? 'line-through' : 'none' }}>
                       {step.name}
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 3 }}>
-                      <span style={{ fontFamily: 'Space Mono', fontSize: 8, fontWeight: 700, padding: '1px 5px', background: ts.bg, color: ts.color, border: ts.border || 'none', textTransform: 'uppercase' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4 }}>
+                      <span style={{ fontFamily: 'Space Mono', fontSize: 10, fontWeight: 700, padding: '2px 6px', background: ts.bg, color: ts.color, border: ts.border || 'none', textTransform: 'uppercase' }}>
                         {ts.label}
                       </span>
-                      {step.round > 0 && <span style={{ fontFamily: 'Space Mono', fontSize: 8, color: '#3f3f46' }}>R{step.round}</span>}
+                      {step.round > 0 && <span style={{ fontFamily: 'Space Mono', fontSize: 10, color: '#71717a' }}>R{step.round}</span>}
                     </div>
                   </div>
                 </div>
-                <span style={{ fontFamily: 'Space Mono', fontSize: 9, color: '#52525b', marginLeft: 8, flexShrink: 0 }}>
+                <span style={{ fontFamily: 'Space Mono', fontSize: 11, color: '#96969e', marginLeft: 8, flexShrink: 0 }}>
                   {step.duration >= 60 ? `${Math.floor(step.duration / 60)}m` : `${step.duration}s`}
                 </span>
               </button>
@@ -728,37 +725,37 @@ function RoadmapSheet({ timeline, currentIdx, viewFilter, onFilterChange, onJump
 
 function CelebrationScreen({ quote, onReset }) {
   return (
-    <div style={{ position: 'fixed', inset: 0, background: '#050507', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 20, zIndex: 50, overflowY: 'auto' }}>
-      <div style={{ width: '100%', maxWidth: 380, margin: 'auto' }}>
-        <div style={{ textAlign: 'center', marginBottom: 24 }}>
-          <div style={{ display: 'inline-block', fontFamily: 'Space Mono', fontSize: 10, color: '#52525b', border: '1px solid #27272a', padding: '6px 14px', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 14 }}>
+    <div style={{ position: 'fixed', inset: 0, height: '100dvh', background: '#050507', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 14, zIndex: 50, overflow: 'hidden' }}>
+      <div style={{ width: '100%', maxWidth: 380, maxHeight: '100%', overflowY: 'auto', margin: 'auto' }}>
+        <div style={{ textAlign: 'center', marginBottom: 14 }}>
+          <div style={{ display: 'inline-block', fontFamily: 'Space Mono', fontSize: 12, color: '#96969e', border: '1px solid #27272a', padding: '6px 12px', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 10 }}>
             DIAGNOSTICS: COMPLETE // SYSTEM_CLEAR
           </div>
-          <h2 style={{ fontFamily: 'Space Mono', fontSize: 'clamp(1rem, 5vw, 1.35rem)', fontWeight: 700, color: '#ffffff', letterSpacing: '0.15em', textTransform: 'uppercase', margin: '0 0 6px' }}>
+          <h2 style={{ fontFamily: 'Space Mono', fontSize: 'clamp(1.15rem, 5.5vw, 1.5rem)', fontWeight: 700, color: '#ffffff', letterSpacing: '0.15em', textTransform: 'uppercase', margin: '0 0 6px' }}>
             MS_SESSION_SUCCEEDED
           </h2>
-          <p style={{ fontFamily: 'Space Mono', fontSize: 10, color: '#d97706', letterSpacing: '0.12em', textTransform: 'uppercase', margin: 0 }}>
+          <p style={{ fontFamily: 'Space Mono', fontSize: 12, color: '#d97706', letterSpacing: '0.12em', textTransform: 'uppercase', margin: 0 }}>
             PHYSICAL INTEGRITY MAINTAINED
           </p>
         </div>
 
-        <div style={{ background: '#0a0a0b', border: '1px solid #1c1c1e', padding: '20px', marginBottom: 20 }}>
-          <div style={{ fontFamily: 'Space Mono', fontSize: 9, color: '#52525b', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 12 }}>[COGNITIVE DIRECTIVE]</div>
-          <p style={{ fontFamily: 'Barlow Condensed', fontSize: 18, fontStyle: 'italic', color: '#ffffff', lineHeight: 1.5, margin: '0 0 12px' }}>"{quote.text}"</p>
-          <p style={{ fontFamily: 'Space Mono', fontSize: 10, color: '#d97706', textTransform: 'uppercase', letterSpacing: '0.1em', textAlign: 'right', margin: 0 }}>— {quote.author}</p>
+        <div style={{ background: '#0a0a0b', border: '1px solid #1c1c1e', padding: '14px', marginBottom: 12 }}>
+          <div style={{ fontFamily: 'Space Mono', fontSize: 11, color: '#96969e', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 8 }}>[COGNITIVE DIRECTIVE]</div>
+          <p style={{ fontFamily: 'Barlow Condensed', fontSize: 20, fontStyle: 'italic', color: '#ffffff', lineHeight: 1.3, margin: '0 0 8px' }}>"{quote.text}"</p>
+          <p style={{ fontFamily: 'Space Mono', fontSize: 12, color: '#d97706', textTransform: 'uppercase', letterSpacing: '0.1em', textAlign: 'right', margin: 0 }}>— {quote.author}</p>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 20 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 12 }}>
           {[['CHRONO', '30:00'], ['CYCLES', '02/02'], ['TEMPO', 'STRICT']].map(([label, val]) => (
-            <div key={label} style={{ background: '#0a0a0b', border: '1px solid #1c1c1e', padding: '12px 8px', textAlign: 'center' }}>
-              <div style={{ fontFamily: 'Space Mono', fontSize: 8, color: '#52525b', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 6 }}>{label}</div>
-              <div style={{ fontFamily: 'Space Mono', fontSize: 13, fontWeight: 700, color: '#ffffff' }}>{val}</div>
+            <div key={label} style={{ background: '#0a0a0b', border: '1px solid #1c1c1e', padding: '8px 8px', textAlign: 'center' }}>
+              <div style={{ fontFamily: 'Space Mono', fontSize: 10, color: '#96969e', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4 }}>{label}</div>
+              <div style={{ fontFamily: 'Space Mono', fontSize: 15, fontWeight: 700, color: '#ffffff' }}>{val}</div>
             </div>
           ))}
         </div>
 
-        <button onClick={onReset} style={{ width: '100%', padding: '16px 0', background: '#f4f4f0', color: '#0a0a0a', fontFamily: 'Space Mono', fontSize: 11, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', cursor: 'pointer', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, transition: 'background 0.15s' }}>
-          <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+        <button onClick={onReset} style={{ width: '100%', padding: '13px 0', minHeight: 46, background: '#f4f4f0', color: '#0a0a0a', fontFamily: 'Space Mono', fontSize: 13, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', cursor: 'pointer', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, transition: 'background 0.15s' }}>
+          <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5} aria-hidden="true">
             <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 11H18" />
           </svg>
           RESTART DIAGNOSTIC RUN
@@ -806,8 +803,8 @@ function App() {
   }
 
   return (
-    <div style={{ position: 'fixed', inset: 0, background: '#050507', color: '#f4f4f0', display: 'flex', justifyContent: 'center' }}>
-    <div style={{ width: '100%', maxWidth: 500, display: 'flex', flexDirection: 'column', borderLeft: '1px solid #18181b', borderRight: '1px solid #18181b' }}>
+    <div style={{ position: 'fixed', inset: 0, height: '100dvh', background: '#050507', color: '#f4f4f0', display: 'flex', justifyContent: 'center', overflow: 'hidden' }}>
+    <div style={{ width: '100%', maxWidth: 500, height: '100%', display: 'flex', flexDirection: 'column', borderLeft: '1px solid #18181b', borderRight: '1px solid #18181b', overflow: 'hidden' }}>
       <Header
         day={state.day} totalSecsLeft={state.totalSecsLeft} isMuted={state.isMuted}
         onToggleMute={() => dispatch({ type: 'TOGGLE_MUTE' })}
@@ -825,6 +822,7 @@ function App() {
         isPlaying={state.isPlaying} onPlayPause={() => dispatch({ type: 'TOGGLE_PLAY' })}
         onPrev={nav.prev} onNext={nav.next} onOpenRoadmap={() => dispatch({ type: 'TOGGLE_ROADMAP' })}
         currentIdx={state.currentIdx} total={state.timeline.length}
+        timeline={state.timeline} roadmapOpen={state.roadmapOpen}
       />
       <RoadmapSheet
         timeline={state.timeline} currentIdx={state.currentIdx} viewFilter={state.viewFilter}
